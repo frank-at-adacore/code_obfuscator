@@ -10,5 +10,20 @@ project Default is
       for Switches ("ada") use ("-g");
    end Compiler;
 
+      package Pretty_Printer is
+      for Default_Switches ("ada") use (
+           "-A2",
+           "-A4",
+           "-aL",
+           "-nM",
+           "--no-separate-is",
+           "--separate-loop-then",
+           "-c4",
+           "-A1",
+           "--par-threshold=1",
+           "--call-threshold=1",
+           "-c2");
+   end Pretty_Printer;
+
 end Default;
 

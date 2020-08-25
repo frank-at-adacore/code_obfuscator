@@ -47,7 +47,7 @@ is
    First_Valid_Character : constant Natural :=
      Wide_Wide_Character'Pos (Wide_Wide_Character'('A'));
 
-   function Char_To_Base_26
+   function Base_26_To_Char
      (Counter : Base_26_T)
       return Wide_Wide_Character is
      (Wide_Wide_Character'Val (First_Valid_Character + Counter));
@@ -70,7 +70,7 @@ is
          return Right
              (Right'First .. Right'First - 1 + Max_Qualified_Name_Length);
       else
-         return Char_To_Base_26 (Left) & Right;
+         return Base_26_To_Char (Left) & Right;
       end if;
    end Combine;
 
@@ -187,6 +187,21 @@ is
    end Get_Name;
 
    function Map_Size return Natural is (Natural (Name_Map.Length (Map)));
+
+   function Obfuscated_Text
+     (Text : Wide_Wide_String)
+      return Wide_Wide_String is
+      Ret_Val : Wide_Wide_String (1 .. Text'Length) := Text;
+   begin
+      for C of Ret_Val
+      loop
+         if C >= '0' and C <= 'z'
+         then
+            C := Base_26_To_Char (Random.Random_Character);
+         end if;
+      end loop;
+      return Ret_Val;
+   end Obfuscated_Text;
 
    -- Debug procedure - turn SPARK off
    procedure Dump with

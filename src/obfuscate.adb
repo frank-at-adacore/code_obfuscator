@@ -3,7 +3,7 @@ with Ada.Wide_Wide_Text_IO;
 with Libadalang.Common;
 with Langkit_Support.Text; use Langkit_Support.Text;
 
-with command_line;
+with Command_Line;
 with Obfuscate.Locations;
 with Obfuscate.Names;
 
@@ -121,10 +121,14 @@ is
       Parse (Unit);
    end Parse;
 
-   function Is_Comment
+   function Convert_Comment
      (Text : Wide_Wide_String)
-      return Boolean is (Text'Length > 2 and then Text
-          (Text'First .. Text'First + 1) = "--");
+      return Wide_Wide_String is
+     (if Text'Length > 2 then "--" & Names.Obfuscated_Text (Text
+             (Text'First + 2 .. Text'Last)) else Text);
+   function Convert_String
+     (Text : Wide_Wide_String)
+      return Wide_Wide_String is (Names.Obfuscated_Text (Text));
 
    procedure Write
      (Unit         : Lal.Analysis_Unit;
@@ -163,12 +167,19 @@ is
                declare
                   Text : constant Wide_Wide_String := Lalco.Text (Token);
                begin
-                  if Is_Comment (Text)
-                  then
-                     Wwio.Put (File, "--");
-                  else
-                     Wwio.Put (File, Text);
-                  end if;
+                  Wwio.Put_Line
+                    (Text & " ==> " &
+                     Lalco.Token_Kind'Wide_Wide_Image
+                       (Lalco.Kind (Lalco.Data (Token))));
+                  case Lalco.Kind (Lalco.Data (Token)) is
+                     when Lalco.Ada_Comment =>
+                        Wwio.Put (File, Convert_Comment (Text));
+                     when Lalco.Ada_String =>
+                        Wwio.Put (File, Convert_String (Text));
+                     when others =>
+
+                        Wwio.Put (File, Text);
+                  end case;
                end;
 
             end if;
@@ -182,15 +193,18 @@ is
    procedure Write (Filename : String) with
       SPARK_Mode => Off
    is
-      Context : Lal.Analysis_Context := Lal.Create_Context;
-      Unit    : Lal.Analysis_Unit    := Lal.Get_From_File (Context, Filename);
-      destination : constant string := command_line.option ( command_line.Destination );
+      Context     : Lal.Analysis_Context := Lal.Create_Context;
+      Unit        : Lal.Analysis_Unit := Lal.Get_From_File (Context, Filename);
+      Destination : constant String      :=
+        Command_Line.Option (Command_Line.Destination);
    begin
-      if destination'length > 0 then
-         Write (Unit, command_line.option ( command_line.Destination ) & Filename );
-else
-      Write (Unit, Filename & ".new");
-end if;
+      if Destination'Length > 0
+      then
+         Write
+           (Unit, Command_Line.Option (Command_Line.Destination) & Filename);
+      else
+         Write (Unit, Filename & ".new");
+      end if;
    end Write;
 
 end Obfuscate;
