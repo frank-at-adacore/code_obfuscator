@@ -1,0 +1,6 @@
+project Default is
+
+   for Main use ("n_queens.adb");
+
+end Default;
+
