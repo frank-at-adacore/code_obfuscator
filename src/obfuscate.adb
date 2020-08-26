@@ -128,7 +128,10 @@ is
              (Text'First + 2 .. Text'Last)) else Text);
    function Convert_String
      (Text : Wide_Wide_String)
-      return Wide_Wide_String is (Names.Obfuscated_Text (Text));
+      return Wide_Wide_String is
+     (if Command_Line.Option (Command_Line.Strings) then
+        Names.Obfuscated_Text (Text)
+      else Text);
 
    procedure Write
      (Unit         : Lal.Analysis_Unit;
@@ -167,10 +170,6 @@ is
                declare
                   Text : constant Wide_Wide_String := Lalco.Text (Token);
                begin
-                  Wwio.Put_Line
-                    (Text & " ==> " &
-                     Lalco.Token_Kind'Wide_Wide_Image
-                       (Lalco.Kind (Lalco.Data (Token))));
                   case Lalco.Kind (Lalco.Data (Token)) is
                      when Lalco.Ada_Comment =>
                         Wwio.Put (File, Convert_Comment (Text));

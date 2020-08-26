@@ -27,7 +27,7 @@ begin
       Argument : constant String := Command_Line.Argument;
    begin
 
-      if Command_Line.Option (Command_Line.Help) or else Argument'Length = 0
+      if Argument'Length = 0
       then
          Command_Line.Help;
 
@@ -46,5 +46,9 @@ begin
       end if;
 
    end;
+
+exception
+   when Command_Line.Command_Line_Exception =>
+      null;
 
 end Obfuscator;
