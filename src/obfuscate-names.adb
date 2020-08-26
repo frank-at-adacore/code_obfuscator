@@ -4,6 +4,7 @@ with Ada.Containers.Formal_Ordered_Maps;
 with Ada.Text_IO;
 with Ada.Wide_Wide_Text_IO;
 
+with Command_Line;
 with Obfuscate.Names.Random;
 
 with Debug;
@@ -23,11 +24,6 @@ is
 
    Map : Name_Map.Map (Max_Size);
 
-   function Name_Part
-     (Str : Wide_Wide_String)
-      return Wide_Wide_String with
-      Pre  => Str'Length <= Max_Qualified_Name_Length,
-      Post => Name_Part'Result'Length <= Max_Qualified_Name_Length;
    function Name_Part
      (Str : Wide_Wide_String)
       return Wide_Wide_String is
@@ -115,6 +111,13 @@ is
       return Ret_Val;
    end Str_To_Base_26;
 
+   function Pad_Length
+     (Actual_Length : Natural)
+      return Natural is
+     (if Command_Line.Option (Command_Line.Constant_Length) > 0 then
+        Command_Line.Option (Command_Line.Constant_Length)
+      else Actual_Length);
+
    function Random_Pad
      (Str : Unbounded_Wide_Wide_String;
       Len : Natural)
@@ -127,7 +130,7 @@ is
       return Unbounded_Wide_Wide_String is
       Ret_Val : Unbounded_Wide_Wide_String := Str;
    begin
-      for I in 1 .. Len - Length (Str)
+      for I in 1 .. Pad_Length (Len) - Length (Str)
       loop
          Ret_Val := Combine (Random.Random_Character, Ret_Val);
          pragma Loop_Invariant (Length (Ret_Val) <= Max_Qualified_Name_Length);

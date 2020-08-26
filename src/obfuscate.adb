@@ -46,6 +46,13 @@ is
          Debug.Print ("Parent " & Node.Parent.Kind'Image, Node);
    end Find_Reference;
 
+   function Valid_Length
+     (Text : Wide_Wide_String)
+      return Boolean is
+     (Text'Length <= Max_Qualified_Name_Length
+      and then Names.Name_Part (Text)'Length >=
+        Command_Line.Option (Command_Line.Min_Length));
+
    procedure Find_Defining_Name (Node : Lal.Ada_Node'Class) is
       Parent : Lal.Ada_Node := Node.Parent;
    begin
@@ -59,7 +66,7 @@ is
                Qualified_Name : Wide_Wide_String renames
                  Parent.As_Defining_Name.P_Basic_Decl.P_Fully_Qualified_Name;
             begin
-               if Qualified_Name'Length <= Max_Qualified_Name_Length
+               if Valid_Length (Qualified_Name)
                then
                   Names.Add_Name (Qualified_Name);
                   Locations.Add_Reference (Node, Qualified_Name);
