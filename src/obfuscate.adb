@@ -140,9 +140,12 @@ is
         Names.Obfuscated_Text (Text)
       else Text);
 
+   -- TBD: Turn SPARK back on when wide_wide_text_io is SPARK-compliant
    procedure Write
      (Unit         : Lal.Analysis_Unit;
-      New_Filename : String) is
+      New_Filename : String) with
+      SPARK_Mode => Off
+   is
       Full_Filename : constant String := Unit.Root.Unit.Get_Filename;
       File          : Wwio.File_Type;
 

@@ -19,7 +19,7 @@ is
    subtype Integer_Options_T is Options_T with
         Static_Predicate => Integer_Options_T in Min_Length | Constant_Length;
 
-   procedure Initialize with
+   procedure Initialize (Success : out Boolean) with
       Global => (Output => Command_Line_State);
 
    procedure Help with

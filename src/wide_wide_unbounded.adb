@@ -1,7 +1,5 @@
 with Ada.Strings.Wide_Wide_Unbounded;
-package body Wide_Wide_Unbounded with
-   SPARK_Mode
-is
+package body Wide_Wide_Unbounded is
 
    package Aswwu renames Ada.Strings.Wide_Wide_Unbounded;
 
@@ -13,10 +11,11 @@ is
    function To_Wide_Wide_String
      (Source : Unbounded_Wide_Wide_String)
       return Wide_Wide_String is
-      ret_val : constant wide_wide_string := Aswwu.To_Wide_Wide_String (Source.Uwws);
+      Ret_Val : constant Wide_Wide_String :=
+        Aswwu.To_Wide_Wide_String (Source.Uwws);
    begin
-      pragma assume ( ret_val'length = length(source) );
-      return ret_val;
+      pragma Assume (Ret_Val'Length = Length (Source));
+      return Ret_Val;
    end To_Wide_Wide_String;
 
    function Length

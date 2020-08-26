@@ -1,6 +1,8 @@
 -- SPARK-compliant version of Ada.Strings.Wide_Wide_Unbounded
 with Ada.Strings.Wide_Wide_Unbounded;
-package Wide_Wide_Unbounded with spark_mode is
+package Wide_Wide_Unbounded with
+   SPARK_Mode
+is
 
    type Unbounded_Wide_Wide_String is private;
 
@@ -8,31 +10,41 @@ package Wide_Wide_Unbounded with spark_mode is
 
    function To_Unbounded_Wide_Wide_String
      (Source : Wide_Wide_String)
-      return Unbounded_Wide_Wide_String with global => null,
-   post => length(To_Unbounded_Wide_Wide_String'result) = source'length;
+      return Unbounded_Wide_Wide_String with
+      Global => null,
+      Post   => Length (To_Unbounded_Wide_Wide_String'Result) = Source'Length;
 
    function To_Wide_Wide_String
      (Source : Unbounded_Wide_Wide_String)
-      return Wide_Wide_String with global => null, post => to_wide_wide_string'result'length = length ( source );
+      return Wide_Wide_String with
+      Global => null,
+      Post   => To_Wide_Wide_String'Result'Length = Length (Source);
 
    function Length
      (Source : Unbounded_Wide_Wide_String)
-      return Natural with post => length'result = to_wide_wide_String(source)'length, global => null;
+      return Natural with
+      Post   => Length'Result = To_Wide_Wide_String (Source)'Length,
+      Global => null;
 
    function "<"
      (Left  : Unbounded_Wide_Wide_String;
       Right : Unbounded_Wide_Wide_String)
-      return Boolean with global => null;
+      return Boolean with
+      Global => null;
 
    procedure Append
      (Source   : in out Unbounded_Wide_Wide_String;
-      New_Item :        Unbounded_Wide_Wide_String) with pre => length(source) <= natural'last - length(new_item),
-     post => length(source) = length(source'old) + length(new_item), global => null;
+      New_Item :        Unbounded_Wide_Wide_String) with
+      Pre    => Length (Source) <= Natural'Last - Length (New_Item),
+      Post   => Length (Source) = Length (Source'Old) + Length (New_Item),
+      Global => null;
 
    procedure Append
      (Source   : in out Unbounded_Wide_Wide_String;
-      New_Item :        Wide_Wide_Character) with pre => length(source) < natural'last,
-     post => length(source) = length(source'old) + 1, global => null;
+      New_Item :        Wide_Wide_Character) with
+      Pre    => Length (Source) < Natural'Last,
+      Post   => Length (Source) = Length (Source'Old) + 1,
+      Global => null;
 
 private
 

@@ -13,7 +13,7 @@ is
       Abstract_State => Options_State,
       Initializes    => Options_State
    is
-      procedure Initialize with
+      procedure Initialize (Success : out Boolean) with
          Global => (Output => Options_State);
       function Value
         (Which : String_Options_T)
@@ -28,10 +28,11 @@ is
          return Integer with
          Global => (Input => Options_State);
       function Argument return String;
-      procedure Help;
+      procedure Help with
+         Global => (Input => Options_State);
    end Options;
 
-   procedure Initialize renames Options.Initialize;
+   procedure Initialize (Success : out Boolean) renames Options.Initialize;
 
    function Argument return String renames Options.Argument;
 
@@ -105,7 +106,7 @@ is
       Configuration : Command_Line_Configuration with
          Part_Of => Options_State;
 
-      procedure Initialize is
+      procedure Initialize (Success : out Boolean) is
       begin
          for Option in String_Options_T
          loop
@@ -147,9 +148,10 @@ is
             Usage  => "[switches] GPR-file | Ada-file");
 
          Getopt (Configuration);
+         Success := True;
       exception
          when others =>
-            raise Command_Line_Exception;
+            Success := False;
 
       end Initialize;
 

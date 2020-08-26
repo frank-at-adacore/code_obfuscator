@@ -15,7 +15,7 @@ with Obfuscate;
 
 -- SPARK off until GNATCOLL and LAL are SPARK-compliant
 package body Collection with
-   SPARK_Mode => off
+   SPARK_Mode => Off
 is
 
    package Gcp renames Gnatcoll.Projects;
@@ -96,14 +96,14 @@ is
       return False;
    end Is_Skipped;
 
-   Separator : Character renames GNAT.Directory_Operations.Dir_Separator;
    function Is_Excluded
      (Filename : String)
       return Boolean is
    begin
       for Excluded of Excluded_Paths
       loop
-         if Begins_With (Excluded, Filename, Separator)
+         if Begins_With
+             (Excluded, Filename, GNAT.Directory_Operations.Dir_Separator)
          then
             return True;
          end if;
@@ -113,7 +113,9 @@ is
 
    procedure Parse_One_File
      (Context : Lal.Analysis_Context;
-      File    : Vfs.Virtual_File) with spark_mode => off is
+      File    : Vfs.Virtual_File) with
+      SPARK_Mode => Off
+   is
       Info_Set  : Gcp.File_Info_Set := Project_Tree.Info_Set (File => File);
       File_Info : Gcp.File_Info;
       Unit      : Lal.Analysis_Unit;
@@ -135,7 +137,9 @@ is
 
    procedure Write_One_File
      (Context : Lal.Analysis_Context;
-      File    : Vfs.Virtual_File) with spark_mode => off is
+      File    : Vfs.Virtual_File) with
+      SPARK_Mode => Off
+   is
       Info_Set  : Gcp.File_Info_Set := Project_Tree.Info_Set (File => File);
       File_Info : Gcp.File_Info;
       Unit      : Lal.Analysis_Unit;
@@ -152,13 +156,15 @@ is
             Unit := Context.Get_From_File (File_Info.File.Display_Full_Name);
             Obfuscate.Write
               (Unit,
-               command_line.option ( command_line.Destination ) &
+               Command_Line.Option (Command_Line.Destination) &
                Ada.Directories.Simple_Name (File_Info.File.Display_Full_Name));
          end if;
       end loop;
    end Write_One_File;
 
-   procedure Process_Gpr_File (Filename : String) with spark_mode => off is
+   procedure Process_Gpr_File (Filename : String) with
+      SPARK_Mode => Off
+   is
       Root_Project_Path : Vfs.Virtual_File :=
         Vfs.Create (Full_Filename => Vfs.Filesystem_String (Filename));
       Context : Lal.Analysis_Context;
