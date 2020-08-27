@@ -24,19 +24,37 @@ is
 
    Map : Name_Map.Map (Max_Size);
 
+   function Last_Dot
+     (Str : Wide_Wide_String)
+      return Integer is
+   begin
+      if Str'Length > 0
+      then
+         for I in reverse Str'Range
+         loop
+            if Str (I) = '.'
+            then
+               return I;
+            end if;
+            pragma Loop_Invariant (for all C of Str
+                 (I .. Str'Last) => C /= '.');
+         end loop;
+      end if;
+      return Str'First - 1;
+   end Last_Dot;
+
    function Name_Part
      (Str : Wide_Wide_String)
       return Wide_Wide_String is
+      Dot : Integer := Last_Dot (Str);
    begin
-      for I in reverse Str'Range
-      loop
-         if Str (I) = '.' and then I < Str'Last
-         then
-            return Str
-                (I + 1 .. Str'Last);
-         end if;
-      end loop;
-      return Str;
+      if Dot in Str'Range
+      then
+         return Str
+             (Dot + 1 .. Str'Last);
+      else
+         return Str;
+      end if;
    end Name_Part;
 
    subtype Base_26_T is Natural range 0 .. 25;
@@ -142,7 +160,8 @@ is
      (Input_Name  :     Wide_Wide_String;
       Output_Name : out Unbounded_Wide_Wide_String) with
       Pre => Map_Size < Natural'Last and
-      Input_Name'Length <= Max_Qualified_Name_Length,
+      Input_Name'Length <= Max_Qualified_Name_Length and
+      Input_Name'Last < Integer'Last,
       Post => Length (Output_Name) <= Max_Qualified_Name_Length;
    procedure Obfuscated_Name
      (Input_Name  :     Wide_Wide_String;
@@ -157,9 +176,9 @@ is
         To_Unbounded_Wide_Wide_String (Qualified_Name);
       New_Name : Unbounded_Wide_Wide_String;
    begin
-      if not Name_Map.Contains ( Map, To_Add ) and then
-        Name_Map.Length ( Map ) < Max_Size
-        then
+      if not Name_Map.Contains (Map, To_Add)
+        and then Name_Map.Length (Map) < Max_Size
+      then
          Obfuscated_Name (Qualified_Name, New_Name);
          Debug.Print
            ("Add Name: " & Qualified_Name & " as " &

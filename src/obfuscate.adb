@@ -48,10 +48,33 @@ is
 
    function Valid_Length
      (Text : Wide_Wide_String)
+      return Boolean with
+      Pre => Text'Last < Integer'Last;
+   function Valid_Length
+     (Text : Wide_Wide_String)
       return Boolean is
      (Text'Length <= Max_Qualified_Name_Length
       and then Names.Name_Part (Text)'Length >=
         Command_Line.Option (Command_Line.Min_Length));
+
+   function Get_Qualified_Name
+     (Node : Lal.Ada_Node)
+      return Wide_Wide_String with
+      Post => Get_Qualified_Name'Result'Last < Integer'Last;
+   function Get_Qualified_Name
+     (Node : Lal.Ada_Node)
+      return Wide_Wide_String is
+      Ret_Val : Wide_Wide_String :=
+        Node.As_Defining_Name.P_Basic_Decl.P_Fully_Qualified_Name;
+   begin
+      if Ret_Val'Last = Integer'Last
+      then
+         return Ret_Val
+             (Ret_Val'First .. Ret_Val'Last - 1);
+      else
+         return Ret_Val;
+      end if;
+   end Get_Qualified_Name;
 
    procedure Find_Defining_Name (Node : Lal.Ada_Node'Class) is
       Parent : Lal.Ada_Node := Node.Parent;
@@ -63,8 +86,8 @@ is
          if Parent.Kind = Lalco.Ada_Defining_Name
          then
             declare
-               Qualified_Name : Wide_Wide_String renames
-                 Parent.As_Defining_Name.P_Basic_Decl.P_Fully_Qualified_Name;
+               Qualified_Name : Wide_Wide_String :=
+                 Get_Qualified_Name (Parent);
             begin
                if Valid_Length (Qualified_Name)
                then
@@ -128,6 +151,10 @@ is
       Parse (Unit);
    end Parse;
 
+   function Convert_Comment
+     (Text : Wide_Wide_String)
+      return Wide_Wide_String with
+      Pre => Text'Length < Max_Qualified_Name_Length;
    function Convert_Comment
      (Text : Wide_Wide_String)
       return Wide_Wide_String is
