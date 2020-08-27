@@ -155,12 +155,11 @@ is
    procedure Add_Name (Qualified_Name : Wide_Wide_String) is
       To_Add : constant Unbounded_Wide_Wide_String :=
         To_Unbounded_Wide_Wide_String (Qualified_Name);
-      Cursor   : Name_Map.Cursor;
       New_Name : Unbounded_Wide_Wide_String;
    begin
-      Cursor := Name_Map.Find (Map, To_Add);
-      if Cursor = Name_Map.No_Element and then Name_Map.Length (Map) < Max_Size
-      then
+      if not Name_Map.Contains ( Map, To_Add ) and then
+        Name_Map.Length ( Map ) < Max_Size
+        then
          Obfuscated_Name (Qualified_Name, New_Name);
          Debug.Print
            ("Add Name: " & Qualified_Name & " as " &

@@ -39,7 +39,8 @@ begin
 
          elsif not Exists (Argument)
          then
-            Put_Line (Argument & " does not exist");
+            Put (Argument);
+            Put_Line (" does not exist");
 
          elsif Is_Gpr_File (Argument)
          then
