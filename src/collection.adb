@@ -1,4 +1,4 @@
-with Ada.Containers.Formal_Vectors;
+with Ada.Containers.Vectors;
 with Ada.Directories;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with GNAT.Directory_Operations;
@@ -26,9 +26,9 @@ is
    Max_Size : constant := 10_000;
 
    subtype Index_T is Integer range 1 .. Max_Size;
-   package String_Vectors is new Ada.Containers.Formal_Vectors
+   package String_Vectors is new Ada.Containers.Vectors
      (Index_T, Unbounded_String);
-   subtype Vector_T is String_Vectors.Vector (Max_Size);
+   subtype Vector_T is String_Vectors.Vector;
 
    function Convert_To_String_Vectors
      (Str : String)

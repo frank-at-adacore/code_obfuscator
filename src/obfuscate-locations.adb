@@ -1,5 +1,5 @@
 with Ada.Containers;
-with Ada.Containers.Formal_Ordered_Maps;
+with Ada.Containers.Ordered_Maps;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Wide_Wide_Unbounded; use Wide_Wide_Unbounded;
 with Ada.Text_IO;
@@ -28,11 +28,11 @@ is
 
    Max_Size : constant := 10_000;
 
-   package Location_Map is new Ada.Containers.Formal_Ordered_Maps
+   package Location_Map is new Ada.Containers.Ordered_Maps
      (Key_Type => Key_T, Element_Type => Unbounded_Wide_Wide_String);
    use type Location_Map.Cursor;
 
-   Map : Location_Map.Map (Max_Size);
+   Map : Location_Map.Map;
 
    procedure Add_Reference
      (Node           : Lal.Ada_Node'Class;
@@ -68,11 +68,11 @@ is
       then
          declare
             Element : Unbounded_Wide_Wide_String :=
-              Location_Map.Element (Map, Cursor);
+              Location_Map.Element (Cursor);
          begin
             if Length (Element) <= Max_Qualified_Name_Length
             then
-               return To_Wide_Wide_String (Location_Map.Element (Map, Cursor));
+               return To_Wide_Wide_String (Location_Map.Element (Cursor));
             end if;
          end;
       end if;
@@ -135,14 +135,13 @@ is
       Cursor := Location_Map.First (Map);
       while Cursor /= Location_Map.No_Element
       loop
-         Key     := Location_Map.Key (Map, Cursor);
+         Key     := Location_Map.Key (Cursor);
          Element := Location_Map.Element
-             (Container => Map,
-              Position  => Cursor);
+             (Position  => Cursor);
          Ada.Text_IO.Put (To_String (Key.Filename) & " ");
          Ada.Wide_Wide_Text_IO.Put (Debug.Image (Key.Sloc_Range) & " => ");
          Ada.Wide_Wide_Text_IO.Put_Line (To_Wide_Wide_String (Element));
-         Cursor := Location_Map.Next (Map, Cursor);
+         Cursor := Location_Map.Next (Cursor);
       end loop;
 
    end Dump;

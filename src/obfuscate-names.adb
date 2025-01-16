@@ -1,6 +1,6 @@
 with Wide_Wide_Unbounded; use Wide_Wide_Unbounded;
 with Ada.Containers;
-with Ada.Containers.Formal_Ordered_Maps;
+with Ada.Containers.Ordered_Maps;
 with Ada.Text_IO;
 with Ada.Wide_Wide_Text_IO;
 
@@ -17,12 +17,12 @@ is
 
    Max_Size : constant := 10_000;
 
-   package Name_Map is new Ada.Containers.Formal_Ordered_Maps
+   package Name_Map is new Ada.Containers.Ordered_Maps
      (Key_Type     => Unbounded_Wide_Wide_String,
       Element_Type => Unbounded_Wide_Wide_String);
    use type Name_Map.Cursor;
 
-   Map : Name_Map.Map (Max_Size);
+   Map : Name_Map.Map;
 
    function Last_Dot
      (Str : Wide_Wide_String)
@@ -203,7 +203,7 @@ is
          Debug.Print ("Not found: " & Qualified_Name);
          return "";
       else
-         return To_Wide_Wide_String (Name_Map.Element (Map, Cursor));
+         return To_Wide_Wide_String (Name_Map.Element (Cursor));
       end if;
    end Get_Name;
 
@@ -237,12 +237,11 @@ is
       while Cursor /= Name_Map.No_Element
       loop
          Element := Name_Map.Element
-             (Container => Map,
-              Position  => Cursor);
+             (Position  => Cursor);
          Ada.Wide_Wide_Text_IO.Put_Line
-           (To_Wide_Wide_String (Name_Map.Key (Map, Cursor)) & ": " &
+           (To_Wide_Wide_String (Name_Map.Key (Cursor)) & ": " &
             To_Wide_Wide_String (Element));
-         Cursor := Name_Map.Next (Map, Cursor);
+         Cursor := Name_Map.Next (Cursor);
       end loop;
    end Dump;
 
