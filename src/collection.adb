@@ -1,9 +1,10 @@
 with Ada.Containers.Vectors;
 with Ada.Directories;
+with Ada.Exceptions;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with GNAT.Directory_Operations;
-with Gnatcoll.Projects;
-with Gnatcoll.Vfs;
+with GNATCOLL.Projects;
+with GNATCOLL.Vfs;
 
 with Libadalang.Analysis;
 with Libadalang.Project_Provider;
@@ -15,13 +16,13 @@ with Obfuscate;
 
 -- SPARK off until GNATCOLL and LAL are SPARK-compliant
 package body Collection with
-   SPARK_Mode => Off
+  SPARK_Mode => Off
 is
 
-   package Gcp renames Gnatcoll.Projects;
+   package Gcp renames GNATCOLL.Projects;
    package Lal renames Libadalang.Analysis;
    package Lalpp renames Libadalang.Project_Provider;
-   package Vfs renames Gnatcoll.Vfs;
+   package Vfs renames GNATCOLL.Vfs;
 
    Max_Size : constant := 10_000;
 
@@ -42,19 +43,14 @@ is
          String_Vectors.Append (Ret_Val, To_Add);
       end Add_One;
    begin
-      for I in Str'First .. Str'Last
-      loop
-         if Str (I) = ','
-         then
-            Add_One (Str
-                 (First .. I - 1));
+      for I in Str'First .. Str'Last loop
+         if Str (I) = ',' then
+            Add_One (Str (First .. I - 1));
             First := I + 1;
          end if;
       end loop;
-      if First < Str'Last
-      then
-         Add_One (Str
-              (First .. Str'Last));
+      if First < Str'Last then
+         Add_One (Str (First .. Str'Last));
       end if;
       return Ret_Val;
    end Convert_To_String_Vectors;
@@ -69,11 +65,10 @@ is
       Separator : Character)
       return Boolean is
    begin
-      if Look_For = In_What
-      then
+      if Look_For = In_What then
          return True;
-      elsif In_What'Length > Length (Look_For) and then In_What
-            (In_What'First .. In_What'First + Length (Look_For)) =
+      elsif In_What'Length > Length (Look_For)
+        and then In_What (In_What'First .. In_What'First + Length (Look_For)) =
           Look_For & Separator
       then
          return True;
@@ -86,10 +81,8 @@ is
      (Unit_Name : String)
       return Boolean is
    begin
-      for Skipped of Skipped_Units
-      loop
-         if Begins_With (Skipped, Unit_Name, '.')
-         then
+      for Skipped of Skipped_Units loop
+         if Begins_With (Skipped, Unit_Name, '.') then
             return True;
          end if;
       end loop;
@@ -100,8 +93,7 @@ is
      (Filename : String)
       return Boolean is
    begin
-      for Excluded of Excluded_Paths
-      loop
+      for Excluded of Excluded_Paths loop
          if Begins_With
              (Excluded, Filename, GNAT.Directory_Operations.Dir_Separator)
          then
@@ -114,15 +106,14 @@ is
    procedure Parse_One_File
      (Context : Lal.Analysis_Context;
       File    : Vfs.Virtual_File) with
-      SPARK_Mode => Off
+     SPARK_Mode => Off
    is
       Info_Set  : Gcp.File_Info_Set := Project_Tree.Info_Set (File => File);
       File_Info : Gcp.File_Info;
       Unit      : Lal.Analysis_Unit;
 
    begin
-      for Info of Info_Set
-      loop
+      for Info of Info_Set loop
          File_Info := Gcp.File_Info (Info);
          if Is_Skipped (File_Info.Unit_Name)
            or else Is_Excluded (File_Info.File.Display_Full_Name)
@@ -138,15 +129,14 @@ is
    procedure Write_One_File
      (Context : Lal.Analysis_Context;
       File    : Vfs.Virtual_File) with
-      SPARK_Mode => Off
+     SPARK_Mode => Off
    is
       Info_Set  : Gcp.File_Info_Set := Project_Tree.Info_Set (File => File);
       File_Info : Gcp.File_Info;
       Unit      : Lal.Analysis_Unit;
 
    begin
-      for Info of Info_Set
-      loop
+      for Info of Info_Set loop
          File_Info := Gcp.File_Info (Info);
          if Is_Skipped (File_Info.Unit_Name)
            or else Is_Excluded (File_Info.File.Display_Full_Name)
@@ -163,19 +153,19 @@ is
    end Write_One_File;
 
    procedure Process_Gpr_File (Filename : String) with
-      SPARK_Mode => Off
+     SPARK_Mode => Off
    is
       Root_Project_Path : Vfs.Virtual_File :=
         Vfs.Create (Full_Filename => Vfs.Filesystem_String (Filename));
-      Context : Lal.Analysis_Context;
-      Files   : Vfs.File_Array_Access;
+      Context           : Lal.Analysis_Context;
+      Files             : Vfs.File_Array_Access;
 
    begin
 
       Excluded_Paths :=
         Convert_To_String_Vectors
           (Command_Line.Option (Command_Line.Excluded_Paths));
-      Skipped_Units :=
+      Skipped_Units  :=
         Convert_To_String_Vectors
           (Command_Line.Option (Command_Line.Skipped_Units));
 
@@ -188,14 +178,24 @@ is
                (Tree => Project_Tree'Access,
                 Env  => null));
 
-      Files := Project_Tree.Root_Project.Source_Files (Recursive => True);
-      for F in Files'Range
-      loop
-         Parse_One_File (Context, Files (F));
+      Files := Project_Tree.Root_Project.Source_Files
+          (Recursive => Command_Line.Option (Command_Line.Recursive),
+           Include_Externally_Built =>
+             Command_Line.Option (Command_Line.Externally_Built));
+      for F in Files'Range loop
+         declare
+            Fn : Vfs.Filesystem_String := Files (F).Full_Name;
+         begin
+            Parse_One_File (Context, Files (F));
+         exception
+            when The_Err : others =>
+               Ada.Text_IO.Put_Line
+                 (String (Fn) & " => " &
+                  Ada.Exceptions.Exception_Name (The_Err));
+         end;
       end loop;
 
-      for F in Files'Range
-      loop
+      for F in Files'Range loop
          Write_One_File (Context, Files (F));
       end loop;
 

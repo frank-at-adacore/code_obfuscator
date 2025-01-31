@@ -73,6 +73,18 @@ is
               To_Unbounded_String
                 ("If specified, string literals will also be obfuscated"),
             Boolean_Value => False, others => <>),
+         Recursive =>
+           (Switch => 'r', Long_Switch => To_Unbounded_String ("recursive"),
+            Help   =>
+              To_Unbounded_String
+                ("If specified, imported projects will be traversed"),
+            Boolean_Value => False, others => <>),
+         Externally_Built =>
+           (Switch => 'b', Long_Switch => To_Unbounded_String ("external"),
+            Help   =>
+              To_Unbounded_String
+                ("If specified, externally built projects will be traversed"),
+            Boolean_Value => False, others => <>),
          Help =>
            (Switch => 'h', Long_Switch => To_Unbounded_String ("help"),
             Help   => To_Unbounded_String ("This help message"), others => <>),

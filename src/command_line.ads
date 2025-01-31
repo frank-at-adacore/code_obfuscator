@@ -10,12 +10,12 @@ is
    -- all possible command-line options
    type Options_T is
      (Destination, Strings, Min_Length, Constant_Length, Skipped_Units,
-      Excluded_Paths, Help);
+      Excluded_Paths, Recursive, Externally_Built, Help);
    subtype String_Options_T is Options_T with
         Static_Predicate => String_Options_T in Destination | Skipped_Units |
             Excluded_Paths;
    subtype Boolean_Options_T is Options_T with
-        Static_Predicate => Boolean_Options_T in Strings | Help;
+        Static_Predicate => Boolean_Options_T in Strings | Recursive | Externally_Built| Help;
    subtype Integer_Options_T is Options_T with
         Static_Predicate => Integer_Options_T in Min_Length | Constant_Length;
 
