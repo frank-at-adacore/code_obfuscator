@@ -175,8 +175,9 @@ is
 
       Context :=
         Lal.Create_Context (Unit_Provider => Lalpp.Create_Project_Unit_Provider
-               (Tree => Project_Tree'Access,
-                Env  => null));
+               (Tree             => Project_Tree'Access,
+                Env              => null,
+                Is_Project_Owner => False));
 
       Files := Project_Tree.Root_Project.Source_Files
           (Recursive => Command_Line.Option (Command_Line.Recursive),
