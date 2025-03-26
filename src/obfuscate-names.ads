@@ -1,5 +1,5 @@
 with Ada.Containers.Ordered_Maps;
-with Wide_Wide_Unbounded; use Wide_Wide_Unbounded;
+with Ada.Strings.Wide_Wide_Unbounded; use Ada.Strings.Wide_Wide_Unbounded;
 
 package Obfuscate.Names is
 

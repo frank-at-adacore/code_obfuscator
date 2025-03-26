@@ -1,11 +1,14 @@
 with Ada.Containers.Ordered_Maps;
 with Ada.Strings.Unbounded;
+with Ada.Strings.Wide_Wide_Unbounded;
 with Langkit_Support.Slocs;
 with Libadalang.Analysis;
-with Wide_Wide_Unbounded;
 
 package Obfuscate.Locations is
    package Lal renames Libadalang.Analysis;
+
+   use Ada.Strings.Unbounded;
+   use Ada.Strings.Wide_Wide_Unbounded;
 
    procedure Add_Reference
      (Node           : Lal.Ada_Node'Class;
@@ -21,10 +24,8 @@ package Obfuscate.Locations is
 
 private
 
-   use type Wide_Wide_Unbounded.Unbounded_Wide_Wide_String;
-
    type Key_T is record
-      Filename   : Ada.Strings.Unbounded.Unbounded_String;
+      Filename   : Unbounded_String;
       Sloc_Range : Langkit_Support.Slocs.Source_Location_Range;
    end record;
 
@@ -36,7 +37,7 @@ private
 
    package Location_Map is new Ada.Containers.Ordered_Maps
      (Key_Type     => Key_T,
-      Element_Type => Wide_Wide_Unbounded.Unbounded_Wide_Wide_String);
+      Element_Type => Unbounded_Wide_Wide_String);
 
    Map : Location_Map.Map;
 

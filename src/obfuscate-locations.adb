@@ -2,9 +2,6 @@ with Ada.Containers;
 
 package body Obfuscate.Locations is
 
-   use Ada.Strings.Unbounded;
-   use Wide_Wide_Unbounded;
-
    use type Langkit_Support.Slocs.Line_Number;
    use type Langkit_Support.Slocs.Column_Number;
    use type Location_Map.Cursor;
