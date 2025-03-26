@@ -11,13 +11,10 @@ with Libadalang.Project_Provider;
 
 with Ada.Text_IO;
 
-with Command_Line;
+with Cli;
 with Obfuscate;
 
--- SPARK off until GNATCOLL and LAL are SPARK-compliant
-package body Collection with
-  SPARK_Mode => Off
-is
+package body Collection is
 
    package Gcp renames GNATCOLL.Projects;
    package Lal renames Libadalang.Analysis;
@@ -26,38 +23,9 @@ is
 
    Max_Size : constant := 10_000;
 
-   subtype Index_T is Integer range 1 .. Max_Size;
-   package String_Vectors is new Ada.Containers.Vectors
-     (Index_T, Unbounded_String);
-   subtype Vector_T is String_Vectors.Vector;
-
-   function Convert_To_String_Vectors
-     (Str : String)
-      return Vector_T is
-      Ret_Val : Vector_T;
-      First   : Integer := Str'First;
-      procedure Add_One (Piece : String) is
-         To_Add : Unbounded_String := To_Unbounded_String (Piece);
-      begin
-         Trim (To_Add, Ada.Strings.Both);
-         String_Vectors.Append (Ret_Val, To_Add);
-      end Add_One;
-   begin
-      for I in Str'First .. Str'Last loop
-         if Str (I) = ',' then
-            Add_One (Str (First .. I - 1));
-            First := I + 1;
-         end if;
-      end loop;
-      if First < Str'Last then
-         Add_One (Str (First .. Str'Last));
-      end if;
-      return Ret_Val;
-   end Convert_To_String_Vectors;
-
    Project_Tree   : aliased Gcp.Project_Tree;
-   Excluded_Paths : Vector_T;
-   Skipped_Units  : Vector_T;
+   Excluded_Paths : Cli.String_Set_T;
+   Skipped_Units  : Cli.String_Set_T;
 
    function Begins_With
      (Look_For  : Unbounded_String;
@@ -105,9 +73,7 @@ is
 
    procedure Parse_One_File
      (Context : Lal.Analysis_Context;
-      File    : Vfs.Virtual_File) with
-     SPARK_Mode => Off
-   is
+      File    : Vfs.Virtual_File) is
       Info_Set  : Gcp.File_Info_Set := Project_Tree.Info_Set (File => File);
       File_Info : Gcp.File_Info;
       Unit      : Lal.Analysis_Unit;
@@ -128,9 +94,7 @@ is
 
    procedure Write_One_File
      (Context : Lal.Analysis_Context;
-      File    : Vfs.Virtual_File) with
-     SPARK_Mode => Off
-   is
+      File    : Vfs.Virtual_File) is
       Info_Set  : Gcp.File_Info_Set := Project_Tree.Info_Set (File => File);
       File_Info : Gcp.File_Info;
       Unit      : Lal.Analysis_Unit;
@@ -146,15 +110,13 @@ is
             Unit := Context.Get_From_File (File_Info.File.Display_Full_Name);
             Obfuscate.Write
               (Unit,
-               Command_Line.Option (Command_Line.Destination) &
+               Cli.Destination &
                Ada.Directories.Simple_Name (File_Info.File.Display_Full_Name));
          end if;
       end loop;
    end Write_One_File;
 
-   procedure Process_Gpr_File (Filename : String) with
-     SPARK_Mode => Off
-   is
+   procedure Process_Gpr_File (Filename : String) is
       Root_Project_Path : Vfs.Virtual_File :=
         Vfs.Create (Full_Filename => Vfs.Filesystem_String (Filename));
       Context           : Lal.Analysis_Context;
@@ -162,12 +124,8 @@ is
 
    begin
 
-      Excluded_Paths :=
-        Convert_To_String_Vectors
-          (Command_Line.Option (Command_Line.Excluded_Paths));
-      Skipped_Units  :=
-        Convert_To_String_Vectors
-          (Command_Line.Option (Command_Line.Skipped_Units));
+      Excluded_Paths := Cli.Excluded_Paths;
+      Skipped_Units  := Cli.Skipped_Units;
 
       Gcp.Load
         (Self              => Project_Tree,
@@ -180,9 +138,8 @@ is
                 Is_Project_Owner => False));
 
       Files := Project_Tree.Root_Project.Source_Files
-          (Recursive => Command_Line.Option (Command_Line.Recursive),
-           Include_Externally_Built =>
-             Command_Line.Option (Command_Line.Externally_Built));
+          (Recursive                => Cli.Recursive,
+           Include_Externally_Built => Cli.Externally_Built);
       for F in Files'Range loop
          declare
             Fn : Vfs.Filesystem_String := Files (F).Full_Name;

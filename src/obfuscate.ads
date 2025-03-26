@@ -1,8 +1,6 @@
 with Libadalang.Analysis;
 
-package Obfuscate with
-   SPARK_Mode
-is
+package Obfuscate is
 
    package Lal renames Libadalang.Analysis;
 
@@ -15,6 +13,6 @@ is
       New_Filename : String);
 
 private
-   max_qualified_name_length : constant := 1024;
+   Max_Qualified_Name_Length : constant := 1_024;
 
 end Obfuscate;

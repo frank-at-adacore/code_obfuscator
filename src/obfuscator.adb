@@ -1,49 +1,48 @@
 with Ada.Characters.Handling; use Ada.Characters.Handling;
--- SPARK-compliant version of Ada.Directories
-with Directories; use Directories;
-with Ada.Text_IO; use Ada.Text_IO;
-
+with Ada.Directories;         use Ada.Directories;
+with Ada.Text_IO;             use Ada.Text_IO;
+with Cli;
 with Collection;
-with Command_Line;
 with Obfuscate;
 
-procedure Obfuscator with
-   SPARK_Mode
-is
-
-   Success : Boolean;
+procedure Obfuscator is
 
    function Is_Gpr_File
      (Filename : String)
-      return Boolean is
-      Lc_Filename : constant String  := To_Lower (Filename);
-      Last        : constant Integer := Lc_Filename'Last;
-   begin
-      return Lc_Filename'Length > 4 and then Lc_Filename
-            (Last - 3 .. Last) = ".gpr";
-   end Is_Gpr_File;
+      return Boolean;
+   --  Return True if Filename ends with ".gpr"
+
+   -----------------
+   -- Is_Gpr_File --
+   -----------------
+
+   function Is_Gpr_File
+     (Filename : String)
+      return Boolean is (Extension (To_Lower (Filename)) = "gpr");
+
+   Was_Help_Request : Boolean;
 
 begin
-   --  Insert code here.
-   Command_Line.Initialize (Success);
 
-   if Success
-   then
+   Cli.Initialize;
+   Cli.Parse (Was_Help_Request);
+
+   if Was_Help_Request then
+      Cli.Help;
+
+   else
       declare
-         Argument : constant String := Command_Line.Argument;
+         Argument : constant String := Cli.Argument;
       begin
 
-         if Argument'Length = 0
-         then
-            Command_Line.Help;
+         if Argument'Length = 0 then
+            Cli.Help;
 
-         elsif not Exists (Argument)
-         then
+         elsif not Exists (Argument) then
             Put (Argument);
             Put_Line (" does not exist");
 
-         elsif Is_Gpr_File (Argument)
-         then
+         elsif Is_Gpr_File (Argument) then
             Collection.Process_Gpr_File (Argument);
 
          else

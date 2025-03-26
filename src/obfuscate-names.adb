@@ -4,16 +4,14 @@ with Ada.Containers.Ordered_Maps;
 with Ada.Text_IO;
 with Ada.Wide_Wide_Text_IO;
 
-with Command_Line;
+with Cli;
 with Obfuscate.Names.Random;
 
 with Debug;
 
 use type Ada.Containers.Count_Type;
 
-package body Obfuscate.Names with
-   SPARK_Mode
-is
+package body Obfuscate.Names is
 
    Max_Size : constant := 10_000;
 
@@ -28,16 +26,13 @@ is
      (Str : Wide_Wide_String)
       return Integer is
    begin
-      if Str'Length > 0
-      then
-         for I in reverse Str'Range
-         loop
-            if Str (I) = '.'
-            then
+      if Str'Length > 0 then
+         for I in reverse Str'Range loop
+            if Str (I) = '.' then
                return I;
             end if;
-            pragma Loop_Invariant (for all C of Str
-                 (I .. Str'Last) => C /= '.');
+            pragma Loop_Invariant
+              (for all C of Str (I .. Str'Last) => C /= '.');
          end loop;
       end if;
       return Str'First - 1;
@@ -48,10 +43,8 @@ is
       return Wide_Wide_String is
       Dot : Integer := Last_Dot (Str);
    begin
-      if Dot in Str'Range
-      then
-         return Str
-             (Dot + 1 .. Str'Last);
+      if Dot in Str'Range then
+         return Str (Dot + 1 .. Str'Last);
       else
          return Str;
       end if;
@@ -73,16 +66,15 @@ is
      (Left  : Base_26_T;
       Right : Wide_Wide_String)
       return Wide_Wide_String with
-      Post => Combine'Result'Length <= Max_Qualified_Name_Length;
+     Post => Combine'Result'Length <= Max_Qualified_Name_Length;
    function Combine
      (Left  : Base_26_T;
       Right : Wide_Wide_String)
       return Wide_Wide_String is
    begin
-      if Right'Length >= Max_Qualified_Name_Length
-      then
-         return Right
-             (Right'First .. Right'First - 1 + Max_Qualified_Name_Length);
+      if Right'Length >= Max_Qualified_Name_Length then
+         return
+           Right (Right'First .. Right'First - 1 + Max_Qualified_Name_Length);
       else
          return Base_26_To_Char (Left) & Right;
       end if;
@@ -92,8 +84,8 @@ is
      (Left  : Base_26_T;
       Right : Unbounded_Wide_Wide_String)
       return Unbounded_Wide_Wide_String with
-      Pre  => Length (Right) <= Max_Qualified_Name_Length,
-      Post => Length (Combine'Result) <= Max_Qualified_Name_Length;
+     Pre  => Length (Right) <= Max_Qualified_Name_Length,
+     Post => Length (Combine'Result) <= Max_Qualified_Name_Length;
 
    function Combine
      (Left  : Base_26_T;
@@ -108,7 +100,7 @@ is
    function Str_To_Base_26
      (Counter : Natural)
       return Unbounded_Wide_Wide_String with
-      Post => Length (Str_To_Base_26'Result) <= Max_Qualified_Name_Length;
+     Post => Length (Str_To_Base_26'Result) <= Max_Qualified_Name_Length;
    function Str_To_Base_26
      (Counter : Natural)
       return Unbounded_Wide_Wide_String is
@@ -117,8 +109,7 @@ is
       Ret_Val    : Unbounded_Wide_Wide_String;
    begin
       Ret_Val := To_Unbounded_Wide_Wide_String ("");
-      while Number >= 26
-      loop
+      while Number >= 26 loop
          New_Number := Number / 26;
          pragma Loop_Invariant (Number - (New_Number * 26) in Base_26_T);
          pragma Loop_Invariant (Length (Ret_Val) <= Max_Qualified_Name_Length);
@@ -132,24 +123,21 @@ is
    function Pad_Length
      (Actual_Length : Natural)
       return Natural is
-     (if Command_Line.Option (Command_Line.Constant_Length) > 0 then
-        Command_Line.Option (Command_Line.Constant_Length)
-      else Actual_Length);
+     (if Cli.Constant_Length > 0 then Cli.Constant_Length else Actual_Length);
 
    function Random_Pad
      (Str : Unbounded_Wide_Wide_String;
       Len : Natural)
       return Unbounded_Wide_Wide_String with
-      Pre  => Length (Str) <= Max_Qualified_Name_Length,
-      Post => Length (Random_Pad'Result) <= Max_Qualified_Name_Length;
+     Pre  => Length (Str) <= Max_Qualified_Name_Length,
+     Post => Length (Random_Pad'Result) <= Max_Qualified_Name_Length;
    function Random_Pad
      (Str : Unbounded_Wide_Wide_String;
       Len : Natural)
       return Unbounded_Wide_Wide_String is
       Ret_Val : Unbounded_Wide_Wide_String := Str;
    begin
-      for I in 1 .. Pad_Length (Len) - Length (Str)
-      loop
+      for I in 1 .. Pad_Length (Len) - Length (Str) loop
          Ret_Val := Combine (Random.Random_Character, Ret_Val);
          pragma Loop_Invariant (Length (Ret_Val) <= Max_Qualified_Name_Length);
       end loop;
@@ -159,10 +147,11 @@ is
    procedure Obfuscated_Name
      (Input_Name  :     Wide_Wide_String;
       Output_Name : out Unbounded_Wide_Wide_String) with
-      Pre => Map_Size < Natural'Last and
+     Pre  =>
+      Map_Size < Natural'Last and
       Input_Name'Length <= Max_Qualified_Name_Length and
       Input_Name'Last < Integer'Last,
-      Post => Length (Output_Name) <= Max_Qualified_Name_Length;
+     Post => Length (Output_Name) <= Max_Qualified_Name_Length;
    procedure Obfuscated_Name
      (Input_Name  :     Wide_Wide_String;
       Output_Name : out Unbounded_Wide_Wide_String) is
@@ -172,7 +161,7 @@ is
    end Obfuscated_Name;
 
    procedure Add_Name (Qualified_Name : Wide_Wide_String) is
-      To_Add : constant Unbounded_Wide_Wide_String :=
+      To_Add   : constant Unbounded_Wide_Wide_String :=
         To_Unbounded_Wide_Wide_String (Qualified_Name);
       New_Name : Unbounded_Wide_Wide_String;
    begin
@@ -195,11 +184,10 @@ is
       return Wide_Wide_String is
       To_Find : constant Unbounded_Wide_Wide_String :=
         To_Unbounded_Wide_Wide_String (Qualified_Name);
-      Cursor : Name_Map.Cursor;
+      Cursor  : Name_Map.Cursor;
    begin
       Cursor := Name_Map.Find (Map, To_Find);
-      if Cursor = Name_Map.No_Element
-      then
+      if Cursor = Name_Map.No_Element then
          Debug.Print ("Not found: " & Qualified_Name);
          return "";
       else
@@ -214,30 +202,23 @@ is
       return Wide_Wide_String is
       Ret_Val : Wide_Wide_String (1 .. Text'Length) := Text;
    begin
-      for C of Ret_Val
-      loop
-         if C >= '0' and C <= 'z'
-         then
+      for C of Ret_Val loop
+         if C >= '0' and C <= 'z' then
             C := Base_26_To_Char (Random.Random_Character);
          end if;
       end loop;
       return Ret_Val;
    end Obfuscated_Text;
 
-   -- Debug procedure - turn SPARK off
-   procedure Dump with
-      SPARK_Mode => Off
-   is
+   procedure Dump is
       Cursor  : Name_Map.Cursor;
       Element : Unbounded_Wide_Wide_String;
    begin
       Ada.Text_IO.Put_Line ("=== Names ===");
 
       Cursor := Name_Map.First (Map);
-      while Cursor /= Name_Map.No_Element
-      loop
-         Element := Name_Map.Element
-             (Position  => Cursor);
+      while Cursor /= Name_Map.No_Element loop
+         Element := Name_Map.Element (Position => Cursor);
          Ada.Wide_Wide_Text_IO.Put_Line
            (To_Wide_Wide_String (Name_Map.Key (Cursor)) & ": " &
             To_Wide_Wide_String (Element));

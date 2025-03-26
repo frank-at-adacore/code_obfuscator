@@ -1,3 +1,4 @@
+with Ada.Characters.Conversions;
 with Ada.Strings.Wide_Wide_Unbounded;
 package body Wide_Wide_Unbounded is
 
@@ -31,7 +32,7 @@ package body Wide_Wide_Unbounded is
      (Source   : in out Unbounded_Wide_Wide_String;
       New_Item :        Unbounded_Wide_Wide_String) is
       Original_Length : Natural := Length (Source) with
-         Ghost;
+        Ghost;
    begin
       Aswwu.Append (Source.Uwws, New_Item.Uwws);
       pragma Assume (Length (Source) = Original_Length + Length (New_Item));
@@ -41,10 +42,20 @@ package body Wide_Wide_Unbounded is
      (Source   : in out Unbounded_Wide_Wide_String;
       New_Item :        Wide_Wide_Character) is
       Original_Length : Natural := Length (Source) with
-         Ghost;
+        Ghost;
    begin
       Aswwu.Append (Source.Uwws, New_Item);
       pragma Assume (Length (Source) = Original_Length + 1);
    end Append;
+
+   -----------------
+   -- From_String --
+   -----------------
+
+   function From_String
+     (Source : String)
+      return Unbounded_Wide_Wide_String is
+     (To_Unbounded_Wide_Wide_String
+        (Ada.Characters.Conversions.To_Wide_Wide_String (Source)));
 
 end Wide_Wide_Unbounded;

@@ -1,6 +1,4 @@
-package Collection with
-   SPARK_Mode
-is
+package Collection is
 
    procedure Process_Gpr_File (Filename : String);
 

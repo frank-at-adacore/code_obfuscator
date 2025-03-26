@@ -1,8 +1,6 @@
 -- SPARK-compliant version of Ada.Strings.Wide_Wide_Unbounded
 with Ada.Strings.Wide_Wide_Unbounded;
-package Wide_Wide_Unbounded with
-   SPARK_Mode
-is
+package Wide_Wide_Unbounded is
 
    type Unbounded_Wide_Wide_String is private;
 
@@ -10,41 +8,32 @@ is
 
    function To_Unbounded_Wide_Wide_String
      (Source : Wide_Wide_String)
-      return Unbounded_Wide_Wide_String with
-      Global => null,
-      Post   => Length (To_Unbounded_Wide_Wide_String'Result) = Source'Length;
+      return Unbounded_Wide_Wide_String;
 
    function To_Wide_Wide_String
      (Source : Unbounded_Wide_Wide_String)
-      return Wide_Wide_String with
-      Global => null,
-      Post   => To_Wide_Wide_String'Result'Length = Length (Source);
+      return Wide_Wide_String;
 
    function Length
      (Source : Unbounded_Wide_Wide_String)
-      return Natural with
-      Post   => Length'Result = To_Wide_Wide_String (Source)'Length,
-      Global => null;
+      return Natural;
 
    function "<"
      (Left  : Unbounded_Wide_Wide_String;
       Right : Unbounded_Wide_Wide_String)
-      return Boolean with
-      Global => null;
+      return Boolean;
 
    procedure Append
      (Source   : in out Unbounded_Wide_Wide_String;
-      New_Item :        Unbounded_Wide_Wide_String) with
-      Pre    => Length (Source) <= Natural'Last - Length (New_Item),
-      Post   => Length (Source) = Length (Source'Old) + Length (New_Item),
-      Global => null;
+      New_Item :        Unbounded_Wide_Wide_String);
 
    procedure Append
      (Source   : in out Unbounded_Wide_Wide_String;
-      New_Item :        Wide_Wide_Character) with
-      Pre    => Length (Source) < Natural'Last,
-      Post   => Length (Source) = Length (Source'Old) + 1,
-      Global => null;
+      New_Item :        Wide_Wide_Character);
+
+   function From_String
+     (Source : String)
+      return Unbounded_Wide_Wide_String;
 
 private
 
