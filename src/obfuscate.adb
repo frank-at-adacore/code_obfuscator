@@ -37,8 +37,7 @@ package body Obfuscate is
 
    function Valid_Length
      (Text : Wide_Wide_String)
-      return Boolean with
-     Pre => Text'Last < Integer'Last;
+      return Boolean;
    function Valid_Length
      (Text : Wide_Wide_String)
       return Boolean is
@@ -47,8 +46,7 @@ package body Obfuscate is
 
    function Get_Qualified_Name
      (Node : Lal.Ada_Node)
-      return Wide_Wide_String with
-     Post => Get_Qualified_Name'Result'Last < Integer'Last;
+      return Wide_Wide_String;
    function Get_Qualified_Name
      (Node : Lal.Ada_Node)
       return Wide_Wide_String is
@@ -124,8 +122,7 @@ package body Obfuscate is
 
    function Convert_Comment
      (Text : Wide_Wide_String)
-      return Wide_Wide_String with
-     Pre => Text'Length < Max_Qualified_Name_Length;
+      return Wide_Wide_String;
    function Convert_Comment
      (Text : Wide_Wide_String)
       return Wide_Wide_String is

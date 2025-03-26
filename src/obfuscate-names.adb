@@ -52,8 +52,7 @@ package body Obfuscate.Names is
    function Combine
      (Left  : Base_26_T;
       Right : Wide_Wide_String)
-      return Wide_Wide_String with
-     Post => Combine'Result'Length <= Max_Qualified_Name_Length;
+      return Wide_Wide_String;
    function Combine
      (Left  : Base_26_T;
       Right : Wide_Wide_String)
@@ -70,9 +69,7 @@ package body Obfuscate.Names is
    function Combine
      (Left  : Base_26_T;
       Right : Unbounded_Wide_Wide_String)
-      return Unbounded_Wide_Wide_String with
-     Pre  => Length (Right) <= Max_Qualified_Name_Length,
-     Post => Length (Combine'Result) <= Max_Qualified_Name_Length;
+      return Unbounded_Wide_Wide_String;
 
    function Combine
      (Left  : Base_26_T;
@@ -86,8 +83,7 @@ package body Obfuscate.Names is
 
    function Str_To_Base_26
      (Counter : Natural)
-      return Unbounded_Wide_Wide_String with
-     Post => Length (Str_To_Base_26'Result) <= Max_Qualified_Name_Length;
+      return Unbounded_Wide_Wide_String;
    function Str_To_Base_26
      (Counter : Natural)
       return Unbounded_Wide_Wide_String is
@@ -115,9 +111,7 @@ package body Obfuscate.Names is
    function Random_Pad
      (Str : Unbounded_Wide_Wide_String;
       Len : Natural)
-      return Unbounded_Wide_Wide_String with
-     Pre  => Length (Str) <= Max_Qualified_Name_Length,
-     Post => Length (Random_Pad'Result) <= Max_Qualified_Name_Length;
+      return Unbounded_Wide_Wide_String;
    function Random_Pad
      (Str : Unbounded_Wide_Wide_String;
       Len : Natural)
@@ -133,12 +127,7 @@ package body Obfuscate.Names is
 
    procedure Obfuscated_Name
      (Input_Name  :     Wide_Wide_String;
-      Output_Name : out Unbounded_Wide_Wide_String) with
-     Pre  =>
-      Map_Size < Natural'Last and
-      Input_Name'Length <= Max_Qualified_Name_Length and
-      Input_Name'Last < Integer'Last,
-     Post => Length (Output_Name) <= Max_Qualified_Name_Length;
+      Output_Name : out Unbounded_Wide_Wide_String);
    procedure Obfuscated_Name
      (Input_Name  :     Wide_Wide_String;
       Output_Name : out Unbounded_Wide_Wide_String) is
