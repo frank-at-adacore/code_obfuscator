@@ -5,14 +5,17 @@ package Obfuscate is
    package Lal renames Libadalang.Analysis;
 
    procedure Parse (Filename : String);
+   --  Parse the file
+
    procedure Write (Filename : String);
+   --  Write the file
 
    procedure Parse (Unit : Lal.Analysis_Unit);
+   --  Parse the LAL unit
+
    procedure Write
      (Unit         : Lal.Analysis_Unit;
       New_Filename : String);
-
-private
-   Max_Qualified_Name_Length : constant := 1_024;
+   --  Write the updated LAL unit to New_Filename
 
 end Obfuscate;

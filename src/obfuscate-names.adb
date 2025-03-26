@@ -9,6 +9,63 @@ use type Ada.Containers.Count_Type;
 
 package body Obfuscate.Names is
 
+   subtype Base_26_T is Natural range 0 .. 25;
+   First_Valid_Character : constant Natural :=
+     Wide_Wide_Character'Pos (Wide_Wide_Character'('A'));
+
+   function Base_26_To_Char
+     (Counter : Base_26_T)
+      return Wide_Wide_Character;
+   --  Convert alphabet offset to a wide wide character
+
+   function Combine
+     (Left  : Base_26_T;
+      Right : Wide_Wide_String)
+      return Wide_Wide_String;
+   --  Append the character at offset Left onto the string Right
+
+   function Combine
+     (Left  : Base_26_T;
+      Right : Unbounded_Wide_Wide_String)
+      return Unbounded_Wide_Wide_String;
+   --  Append the character at offset Left onto the unbounded string Right
+
+   function Last_Dot
+     (Str : Wide_Wide_String)
+      return Integer;
+   --  Return location of last dot in Str
+
+   function Name_Part
+     (Str : Wide_Wide_String)
+      return Wide_Wide_String;
+   --  Return everything after the last dot in Str.
+   --  If no dot, return Str
+
+   procedure Obfuscated_Name
+     (Input_Name  :     Wide_Wide_String;
+      Output_Name : out Unbounded_Wide_Wide_String);
+   --  Convert Input_Name into an obfuscated name
+
+   function Pad_Length
+     (Actual_Length : Natural)
+      return Natural;
+   --  If using a constant length, return it. Otherwise return Actual_Length
+
+   function Random_Pad
+     (Str : Unbounded_Wide_Wide_String;
+      Len : Natural)
+      return Unbounded_Wide_Wide_String;
+   --  Add a character to pad to the appropriate length
+
+   function Str_To_Base_26
+     (Counter : Natural)
+      return Unbounded_Wide_Wide_String;
+   --  Create a string? TBD
+
+   --------------
+   -- Last_Dot --
+   --------------
+
    function Last_Dot
      (Str : Wide_Wide_String)
       return Integer is
@@ -23,6 +80,10 @@ package body Obfuscate.Names is
       return Str'First - 1;
    end Last_Dot;
 
+   ---------------
+   -- Name_Part --
+   ---------------
+
    function Name_Part
      (Str : Wide_Wide_String)
       return Wide_Wide_String is
@@ -35,39 +96,27 @@ package body Obfuscate.Names is
       end if;
    end Name_Part;
 
-   subtype Base_26_T is Natural range 0 .. 25;
-   First_Valid_Character : constant Natural :=
-     Wide_Wide_Character'Pos (Wide_Wide_Character'('A'));
+   ---------------------
+   -- Base_26_To_Char --
+   ---------------------
 
    function Base_26_To_Char
      (Counter : Base_26_T)
       return Wide_Wide_Character is
      (Wide_Wide_Character'Val (First_Valid_Character + Counter));
 
-   -- If RIGHT is too long, we will just use the maximum number of characters
-   -- Otherwise, we will convert LEFT to a character and return in prepended
-   -- to RIGHT
-   function Combine
-     (Left  : Base_26_T;
-      Right : Wide_Wide_String)
-      return Wide_Wide_String;
-   function Combine
-     (Left  : Base_26_T;
-      Right : Wide_Wide_String)
-      return Wide_Wide_String is
-   begin
-      if Right'Length >= Max_Qualified_Name_Length then
-         return
-           Right (Right'First .. Right'First - 1 + Max_Qualified_Name_Length);
-      else
-         return Base_26_To_Char (Left) & Right;
-      end if;
-   end Combine;
+   -------------
+   -- Combine --
+   -------------
 
    function Combine
      (Left  : Base_26_T;
-      Right : Unbounded_Wide_Wide_String)
-      return Unbounded_Wide_Wide_String;
+      Right : Wide_Wide_String)
+      return Wide_Wide_String is (Base_26_To_Char (Left) & Right);
+
+   -------------
+   -- Combine --
+   -------------
 
    function Combine
      (Left  : Base_26_T;
@@ -79,17 +128,17 @@ package body Obfuscate.Names is
       return To_Unbounded_Wide_Wide_String (Ret_Val);
    end Combine;
 
-   function Str_To_Base_26
-     (Counter : Natural)
-      return Unbounded_Wide_Wide_String;
+   --------------------
+   -- Str_To_Base_26 --
+   --------------------
+
    function Str_To_Base_26
      (Counter : Natural)
       return Unbounded_Wide_Wide_String is
-      Number     : Natural := Counter;
+      Number     : Natural                    := Counter;
       New_Number : Natural;
-      Ret_Val    : Unbounded_Wide_Wide_String;
+      Ret_Val : Unbounded_Wide_Wide_String := Null_Unbounded_Wide_Wide_String;
    begin
-      Ret_Val := To_Unbounded_Wide_Wide_String ("");
       while Number >= 26 loop
          New_Number := Number / 26;
          Ret_Val    := Combine (Number - (New_Number * 26), Ret_Val);
@@ -99,15 +148,19 @@ package body Obfuscate.Names is
       return Ret_Val;
    end Str_To_Base_26;
 
+   ----------------
+   -- Pad_Length --
+   ----------------
+
    function Pad_Length
      (Actual_Length : Natural)
       return Natural is
      (if Cli.Constant_Length > 0 then Cli.Constant_Length else Actual_Length);
 
-   function Random_Pad
-     (Str : Unbounded_Wide_Wide_String;
-      Len : Natural)
-      return Unbounded_Wide_Wide_String;
+   ----------------
+   -- Random_Pad --
+   ----------------
+
    function Random_Pad
      (Str : Unbounded_Wide_Wide_String;
       Len : Natural)
@@ -120,9 +173,10 @@ package body Obfuscate.Names is
       return Ret_Val;
    end Random_Pad;
 
-   procedure Obfuscated_Name
-     (Input_Name  :     Wide_Wide_String;
-      Output_Name : out Unbounded_Wide_Wide_String);
+   ---------------------
+   -- Obfuscated_Name --
+   ---------------------
+
    procedure Obfuscated_Name
      (Input_Name  :     Wide_Wide_String;
       Output_Name : out Unbounded_Wide_Wide_String) is
@@ -130,6 +184,10 @@ package body Obfuscate.Names is
       Output_Name :=
         Random_Pad (Str_To_Base_26 (Map_Size), Name_Part (Input_Name)'Length);
    end Obfuscated_Name;
+
+   --------------
+   -- Add_Name --
+   --------------
 
    procedure Add_Name (Qualified_Name : Wide_Wide_String) is
       To_Add   : constant Unbounded_Wide_Wide_String :=
@@ -148,6 +206,10 @@ package body Obfuscate.Names is
       end if;
    end Add_Name;
 
+   --------------
+   -- Get_Name --
+   --------------
+
    function Get_Name
      (Qualified_Name : Wide_Wide_String)
       return Wide_Wide_String is
@@ -164,7 +226,15 @@ package body Obfuscate.Names is
       end if;
    end Get_Name;
 
+   --------------
+   -- Map_Size --
+   --------------
+
    function Map_Size return Natural is (Natural (Name_Map.Length (Map)));
+
+   ---------------------
+   -- Obfuscated_Text --
+   ---------------------
 
    function Obfuscated_Text
      (Text : Wide_Wide_String)

@@ -28,6 +28,40 @@ package body Collection is
      (Look_For  : Unbounded_String;
       In_What   : String;
       Separator : Character)
+      return Boolean;
+   --  If In_What either matches Look_For, or starts with Look_For followed
+   --  by Separator, then return True.
+
+   function Is_Excluded
+     (Filename : String)
+      return Boolean;
+   --  Return True if Filename is found as the first (or only) node in any
+   --  of the excluded files.
+
+   function Is_Skipped
+     (Unit_Name : String)
+      return Boolean;
+   --  Return True if Unit_Name is found as the first (or only) node in any
+   --  of the skipped units.
+
+   procedure Parse_One_File
+     (Context : Lal.Analysis_Context;
+      File    : Vfs.Virtual_File);
+   --  Read and parse the file
+
+   procedure Write_One_File
+     (Context : Lal.Analysis_Context;
+      File    : Vfs.Virtual_File);
+   --  Write the obfuscated file
+
+   -----------------
+   -- Begins_With --
+   -----------------
+
+   function Begins_With
+     (Look_For  : Unbounded_String;
+      In_What   : String;
+      Separator : Character)
       return Boolean is
    begin
       if Look_For = In_What then
@@ -42,6 +76,10 @@ package body Collection is
       end if;
    end Begins_With;
 
+   ----------------
+   -- Is_Skipped --
+   ----------------
+
    function Is_Skipped
      (Unit_Name : String)
       return Boolean is
@@ -53,6 +91,10 @@ package body Collection is
       end loop;
       return False;
    end Is_Skipped;
+
+   -----------------
+   -- Is_Excluded --
+   -----------------
 
    function Is_Excluded
      (Filename : String)
@@ -67,6 +109,10 @@ package body Collection is
       end loop;
       return False;
    end Is_Excluded;
+
+   --------------------
+   -- Parse_One_File --
+   --------------------
 
    procedure Parse_One_File
      (Context : Lal.Analysis_Context;
@@ -89,6 +135,10 @@ package body Collection is
          end if;
       end loop;
    end Parse_One_File;
+
+   --------------------
+   -- Write_One_File --
+   --------------------
 
    procedure Write_One_File
      (Context : Lal.Analysis_Context;
@@ -114,6 +164,10 @@ package body Collection is
          end if;
       end loop;
    end Write_One_File;
+
+   ----------------------
+   -- Process_Gpr_File --
+   ----------------------
 
    procedure Process_Gpr_File (Filename : String) is
       Root_Project_Path : constant Vfs.Virtual_File :=

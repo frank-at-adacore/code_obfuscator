@@ -6,6 +6,10 @@ package body Obfuscate.Locations is
    use type Langkit_Support.Slocs.Column_Number;
    use type Location_Map.Cursor;
 
+   -------------------
+   -- Add_Reference --
+   -------------------
+
    procedure Add_Reference
      (Node           : Lal.Ada_Node'Class;
       Qualified_Name : Wide_Wide_String) is
@@ -23,6 +27,10 @@ package body Obfuscate.Locations is
       end if;
    end Add_Reference;
 
+   -----------
+   -- Value --
+   -----------
+
    function Value
      (Filename   : String;
       Sloc_Range : Langkit_Support.Slocs.Source_Location_Range)
@@ -34,17 +42,14 @@ package body Obfuscate.Locations is
    begin
       Cursor := Location_Map.Find (Map, To_Find);
       if Cursor /= Location_Map.No_Element then
-         declare
-            Element : constant Unbounded_Wide_Wide_String :=
-              Location_Map.Element (Cursor);
-         begin
-            if Length (Element) <= Max_Qualified_Name_Length then
-               return To_Wide_Wide_String (Location_Map.Element (Cursor));
-            end if;
-         end;
+         return To_Wide_Wide_String (Location_Map.Element (Cursor));
       end if;
       return "";
    end Value;
+
+   ---------
+   -- "<" --
+   ---------
 
    function "<"
      (Left  : Key_T;
@@ -77,7 +82,5 @@ package body Obfuscate.Locations is
 
       end if;
    end "<";
-
-   function Map_Size return Natural is (Natural (Location_Map.Length (Map)));
 
 end Obfuscate.Locations;

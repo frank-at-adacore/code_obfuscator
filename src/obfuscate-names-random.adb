@@ -6,6 +6,10 @@ package body Obfuscate.Names.Random is
 
    Random_Generator : Generate_Random_Character.Generator;
 
+   ----------------------
+   -- Random_Character --
+   ----------------------
+
    function Random_Character return Base_26_T is
      (Generate_Random_Character.Random (Random_Generator));
 

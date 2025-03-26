@@ -3,26 +3,21 @@ with Ada.Strings.Wide_Wide_Unbounded; use Ada.Strings.Wide_Wide_Unbounded;
 
 package Obfuscate.Names is
 
-   function Last_Dot
-     (Str : Wide_Wide_String)
-      return Integer;
-
-   function Name_Part
-     (Str : Wide_Wide_String)
-      return Wide_Wide_String;
-
    procedure Add_Name (Qualified_Name : Wide_Wide_String);
+   --  Add obfuscated version of Qualified_Name to the map
 
    function Get_Name
      (Qualified_Name : Wide_Wide_String)
       return Wide_Wide_String;
+   --  Get obfuscated name for Qualified_Name
 
-   -- Used to obfuscate strings and comments
    function Obfuscated_Text
      (Text : Wide_Wide_String)
       return Wide_Wide_String;
+   -- Return obfuscated version of Text
 
    function Map_Size return Natural;
+   --  Size of name map
 
 private
 

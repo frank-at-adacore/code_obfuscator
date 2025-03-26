@@ -13,14 +13,14 @@ package Obfuscate.Locations is
    procedure Add_Reference
      (Node           : Lal.Ada_Node'Class;
       Qualified_Name : Wide_Wide_String);
+   --  Add Qualified_Name to the map for key Node
 
-   -- null string means key was not found
    function Value
      (Filename   : String;
       Sloc_Range : Langkit_Support.Slocs.Source_Location_Range)
       return Wide_Wide_String;
-
-   function Map_Size return Natural;
+      --  Return the content from Sloc_Range in Filename.
+      --  If not found, return an empty string
 
 private
 

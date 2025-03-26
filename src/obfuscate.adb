@@ -10,15 +10,41 @@ with Debug;
 package body Obfuscate is
 
    package Lalco renames Libadalang.Common;
-
    package Wwio renames Ada.Wide_Wide_Text_IO;
 
    use type Lalco.Ada_Node_Kind_Type;
 
+   function Convert_Comment
+     (Text : Wide_Wide_String)
+      return Wide_Wide_String;
+   --  If Text is a comment, save the return this as a comment with
+   --  the content obfuscated
+
+   function Convert_String
+     (Text : Wide_Wide_String)
+      return Wide_Wide_String;
+   --  Text is a quoted string. Obfuscate the comments unless the switch
+   --  indicates the user wants to keep them
+
+   procedure Find_Defining_Name (Node : Lal.Ada_Node'Class);
+   --  Search the ancestors of this node to find the enclosing Defining_Name
+
    procedure Find_Reference (Node : Lal.Ada_Node'Class);
+   --  Find the referenced declaration for the node
+
+   function Get_Qualified_Name
+     (Node : Lal.Ada_Node)
+      return Wide_Wide_String;
+   --  Get the qualified name for the node
+
    function Visit_For_Identifiers
      (Node : Lal.Ada_Node'Class)
       return Lalco.Visit_Status;
+   --  Visitor function to find identifiers
+
+   --------------------
+   -- Find_Reference --
+   --------------------
 
    procedure Find_Reference (Node : Lal.Ada_Node'Class) is
       Referenced_Decl : Lal.Basic_Decl;
@@ -35,52 +61,40 @@ package body Obfuscate is
          Debug.Print ("Parent " & Node.Parent.Kind'Image, Node);
    end Find_Reference;
 
-   function Valid_Length
-     (Text : Wide_Wide_String)
-      return Boolean;
-   function Valid_Length
-     (Text : Wide_Wide_String)
-      return Boolean is
-     (Text'Length <= Max_Qualified_Name_Length
-      and then Names.Name_Part (Text)'Length >= Cli.Min_Length);
+   ------------------------
+   -- Get_Qualified_Name --
+   ------------------------
 
    function Get_Qualified_Name
      (Node : Lal.Ada_Node)
-      return Wide_Wide_String;
-   function Get_Qualified_Name
-     (Node : Lal.Ada_Node)
       return Wide_Wide_String is
-      Ret_Val : constant Wide_Wide_String :=
-        Node.As_Defining_Name.P_Basic_Decl.P_Fully_Qualified_Name;
-   begin
-      if Ret_Val'Last = Integer'Last then
-         return Ret_Val (Ret_Val'First .. Ret_Val'Last - 1);
-      else
-         return Ret_Val;
-      end if;
-   end Get_Qualified_Name;
+     (Node.As_Defining_Name.P_Basic_Decl.P_Fully_Qualified_Name);
+
+   ------------------------
+   -- Find_Defining_Name --
+   ------------------------
 
    procedure Find_Defining_Name (Node : Lal.Ada_Node'Class) is
       Parent : Lal.Ada_Node := Node.Parent;
    begin
       while not Parent.Is_Null loop
-         exit when Names.Map_Size = Natural'Last;
-         exit when Locations.Map_Size = Natural'Last;
          if Parent.Kind = Lalco.Ada_Defining_Name then
             declare
                Qualified_Name : constant Wide_Wide_String :=
                  Get_Qualified_Name (Parent);
             begin
-               if Valid_Length (Qualified_Name) then
-                  Names.Add_Name (Qualified_Name);
-                  Locations.Add_Reference (Node, Qualified_Name);
-               end if;
+               Names.Add_Name (Qualified_Name);
+               Locations.Add_Reference (Node, Qualified_Name);
             end;
             exit;
          end if;
          Parent := Parent.Parent;
       end loop;
    end Find_Defining_Name;
+
+   ---------------------------
+   -- Visit_For_Identifiers --
+   ---------------------------
 
    function Visit_For_Identifiers
      (Node : Lal.Ada_Node'Class)
@@ -100,6 +114,10 @@ package body Obfuscate is
       return Lalco.Into;
    end Visit_For_Identifiers;
 
+   -----------
+   -- Parse --
+   -----------
+
    procedure Parse (Unit : Lal.Analysis_Unit) is
    begin
       if not Unit.Root.Is_Null then
@@ -111,6 +129,10 @@ package body Obfuscate is
       end if;
    end Parse;
 
+   -----------
+   -- Parse --
+   -----------
+
    procedure Parse (Filename : String) is
       Context : constant Lal.Analysis_Context := Lal.Create_Context;
       Unit    : constant Lal.Analysis_Unit    :=
@@ -120,25 +142,45 @@ package body Obfuscate is
       Parse (Unit);
    end Parse;
 
-   function Convert_Comment
-     (Text : Wide_Wide_String)
-      return Wide_Wide_String;
+   ---------------------
+   -- Convert_Comment --
+   ---------------------
+
    function Convert_Comment
      (Text : Wide_Wide_String)
       return Wide_Wide_String is
      (if Text'Length > 2 then
         "--" & Names.Obfuscated_Text (Text (Text'First + 2 .. Text'Last))
       else Text);
+
+   --------------------
+   -- Convert_String --
+   --------------------
+
    function Convert_String
      (Text : Wide_Wide_String)
       return Wide_Wide_String is
      (if not Cli.Clear_Strings then Names.Obfuscated_Text (Text) else Text);
+
+   -----------
+   -- Write --
+   -----------
 
    procedure Write
      (Unit         : Lal.Analysis_Unit;
       New_Filename : String) is
       Full_Filename : constant String := Unit.Root.Unit.Get_Filename;
       File          : Wwio.File_Type;
+
+      function Qualified_Name
+        (Token : Lalco.Token_Reference)
+         return Wide_Wide_String;
+      --  If the content for this token is valid, return the obfuscation.
+      --  Otherwise return an empty string
+
+      --------------------
+      -- Qualified_Name --
+      --------------------
 
       function Qualified_Name
         (Token : Lalco.Token_Reference)
@@ -174,7 +216,6 @@ package body Obfuscate is
                      when Lalco.Ada_String =>
                         Wwio.Put (File, Convert_String (Text));
                      when others =>
-
                         Wwio.Put (File, Text);
                   end case;
                end;
@@ -185,6 +226,10 @@ package body Obfuscate is
       Wwio.Close (File);
 
    end Write;
+
+   -----------
+   -- Write --
+   -----------
 
    procedure Write (Filename : String) is
       Context     : constant Lal.Analysis_Context := Lal.Create_Context;
