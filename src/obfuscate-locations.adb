@@ -1,37 +1,13 @@
 with Ada.Containers;
-with Ada.Containers.Ordered_Maps;
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Wide_Wide_Unbounded;   use Wide_Wide_Unbounded;
-with Ada.Text_IO;
-with Ada.Wide_Wide_Text_IO;
-
-with Langkit_Support.Slocs;
-
-use type Ada.Containers.Count_Type;
-use type Langkit_Support.Slocs.Line_Number;
-use type Langkit_Support.Slocs.Column_Number;
-
-with Debug;
 
 package body Obfuscate.Locations is
 
-   type Key_T is record
-      Filename   : Unbounded_String;
-      Sloc_Range : Langkit_Support.Slocs.Source_Location_Range;
-   end record;
-   function "<"
-     (Left  : Key_T;
-      Right : Key_T)
-      return Boolean;
+   use Ada.Strings.Unbounded;
+   use Wide_Wide_Unbounded;
 
-   Max_Size : constant := 10_000;
-
-   package Location_Map is new Ada.Containers.Ordered_Maps
-     (Key_Type     => Key_T,
-      Element_Type => Unbounded_Wide_Wide_String);
+   use type Langkit_Support.Slocs.Line_Number;
+   use type Langkit_Support.Slocs.Column_Number;
    use type Location_Map.Cursor;
-
-   Map : Location_Map.Map;
 
    procedure Add_Reference
      (Node           : Lal.Ada_Node'Class;
@@ -42,15 +18,11 @@ package body Obfuscate.Locations is
       To_Add.Filename   := To_Unbounded_String (Node.Unit.Get_Filename);
       To_Add.Sloc_Range := Node.Sloc_Range;
       Cursor            := Location_Map.Find (Map, To_Add);
-      if Cursor = Location_Map.No_Element
-        and then Location_Map.Length (Map) < Max_Size
-      then
+      if Cursor = Location_Map.No_Element then
          Location_Map.Insert
            (Container => Map,
             Key       => To_Add,
             New_Item  => To_Unbounded_Wide_Wide_String (Qualified_Name));
-         Debug.Print ("Add_reference " & Qualified_Name, False);
-         Debug.Print (" for ", Node);
       end if;
    end Add_Reference;
 
@@ -58,7 +30,7 @@ package body Obfuscate.Locations is
      (Filename   : String;
       Sloc_Range : Langkit_Support.Slocs.Source_Location_Range)
       return Wide_Wide_String is
-      To_Find : Key_T :=
+      To_Find : constant Key_T :=
         (Filename   => To_Unbounded_String (Filename),
          Sloc_Range => Sloc_Range);
       Cursor  : Location_Map.Cursor;
@@ -66,7 +38,7 @@ package body Obfuscate.Locations is
       Cursor := Location_Map.Find (Map, To_Find);
       if Cursor /= Location_Map.No_Element then
          declare
-            Element : Unbounded_Wide_Wide_String :=
+            Element : constant Unbounded_Wide_Wide_String :=
               Location_Map.Element (Cursor);
          begin
             if Length (Element) <= Max_Qualified_Name_Length then
@@ -110,24 +82,5 @@ package body Obfuscate.Locations is
    end "<";
 
    function Map_Size return Natural is (Natural (Location_Map.Length (Map)));
-
-   -- Debug procedure - turn SPARK off
-   procedure Dump is
-      Cursor  : Location_Map.Cursor;
-      Key     : Key_T;
-      Element : Unbounded_Wide_Wide_String;
-   begin
-      Ada.Text_IO.Put_Line ("=== Locations ===");
-      Cursor := Location_Map.First (Map);
-      while Cursor /= Location_Map.No_Element loop
-         Key     := Location_Map.Key (Cursor);
-         Element := Location_Map.Element (Position => Cursor);
-         Ada.Text_IO.Put (To_String (Key.Filename) & " ");
-         Ada.Wide_Wide_Text_IO.Put (Debug.Image (Key.Sloc_Range) & " => ");
-         Ada.Wide_Wide_Text_IO.Put_Line (To_Wide_Wide_String (Element));
-         Cursor := Location_Map.Next (Cursor);
-      end loop;
-
-   end Dump;
 
 end Obfuscate.Locations;

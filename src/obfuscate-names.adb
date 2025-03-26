@@ -1,8 +1,4 @@
-with Wide_Wide_Unbounded; use Wide_Wide_Unbounded;
 with Ada.Containers;
-with Ada.Containers.Ordered_Maps;
-with Ada.Text_IO;
-with Ada.Wide_Wide_Text_IO;
 
 with Cli;
 with Obfuscate.Names.Random;
@@ -12,15 +8,6 @@ with Debug;
 use type Ada.Containers.Count_Type;
 
 package body Obfuscate.Names is
-
-   Max_Size : constant := 10_000;
-
-   package Name_Map is new Ada.Containers.Ordered_Maps
-     (Key_Type     => Unbounded_Wide_Wide_String,
-      Element_Type => Unbounded_Wide_Wide_String);
-   use type Name_Map.Cursor;
-
-   Map : Name_Map.Map;
 
    function Last_Dot
      (Str : Wide_Wide_String)
@@ -41,7 +28,7 @@ package body Obfuscate.Names is
    function Name_Part
      (Str : Wide_Wide_String)
       return Wide_Wide_String is
-      Dot : Integer := Last_Dot (Str);
+      Dot : constant Integer := Last_Dot (Str);
    begin
       if Dot in Str'Range then
          return Str (Dot + 1 .. Str'Last);
@@ -165,9 +152,7 @@ package body Obfuscate.Names is
         To_Unbounded_Wide_Wide_String (Qualified_Name);
       New_Name : Unbounded_Wide_Wide_String;
    begin
-      if not Name_Map.Contains (Map, To_Add)
-        and then Name_Map.Length (Map) < Max_Size
-      then
+      if not Name_Map.Contains (Map, To_Add) then
          Obfuscated_Name (Qualified_Name, New_Name);
          Debug.Print
            ("Add Name: " & Qualified_Name & " as " &
@@ -209,21 +194,5 @@ package body Obfuscate.Names is
       end loop;
       return Ret_Val;
    end Obfuscated_Text;
-
-   procedure Dump is
-      Cursor  : Name_Map.Cursor;
-      Element : Unbounded_Wide_Wide_String;
-   begin
-      Ada.Text_IO.Put_Line ("=== Names ===");
-
-      Cursor := Name_Map.First (Map);
-      while Cursor /= Name_Map.No_Element loop
-         Element := Name_Map.Element (Position => Cursor);
-         Ada.Wide_Wide_Text_IO.Put_Line
-           (To_Wide_Wide_String (Name_Map.Key (Cursor)) & ": " &
-            To_Wide_Wide_String (Element));
-         Cursor := Name_Map.Next (Cursor);
-      end loop;
-   end Dump;
 
 end Obfuscate.Names;

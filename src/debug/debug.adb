@@ -6,7 +6,7 @@ package body Debug is
    package Tio renames Ada.Text_IO;
    package Wio renames Ada.Wide_Wide_Text_IO;
 
-   Debugging : Boolean := False;
+   Debugging : constant Boolean := False;
 
    function Image
      (Sloc_Range : Langkit_Support.Slocs.Source_Location_Range)

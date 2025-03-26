@@ -1,7 +1,5 @@
 with Ada.Wide_Wide_Text_IO;
-
 with Libadalang.Common;
-with Langkit_Support.Text; use Langkit_Support.Text;
 
 with Cli;
 with Obfuscate.Locations;
@@ -33,7 +31,7 @@ package body Obfuscate is
          Debug.Print ("referenced_decl is null", Node);
       end if;
    exception
-      when The_Err : others =>
+      when others =>
          Debug.Print ("Parent " & Node.Parent.Kind'Image, Node);
    end Find_Reference;
 
@@ -54,7 +52,7 @@ package body Obfuscate is
    function Get_Qualified_Name
      (Node : Lal.Ada_Node)
       return Wide_Wide_String is
-      Ret_Val : Wide_Wide_String :=
+      Ret_Val : constant Wide_Wide_String :=
         Node.As_Defining_Name.P_Basic_Decl.P_Fully_Qualified_Name;
    begin
       if Ret_Val'Last = Integer'Last then
@@ -72,7 +70,7 @@ package body Obfuscate is
          exit when Locations.Map_Size = Natural'Last;
          if Parent.Kind = Lalco.Ada_Defining_Name then
             declare
-               Qualified_Name : Wide_Wide_String :=
+               Qualified_Name : constant Wide_Wide_String :=
                  Get_Qualified_Name (Parent);
             begin
                if Valid_Length (Qualified_Name) then
@@ -116,8 +114,9 @@ package body Obfuscate is
    end Parse;
 
    procedure Parse (Filename : String) is
-      Context : Lal.Analysis_Context := Lal.Create_Context;
-      Unit    : Lal.Analysis_Unit    := Lal.Get_From_File (Context, Filename);
+      Context : constant Lal.Analysis_Context := Lal.Create_Context;
+      Unit    : constant Lal.Analysis_Unit    :=
+        Lal.Get_From_File (Context, Filename);
 
    begin
       Parse (Unit);
@@ -191,9 +190,10 @@ package body Obfuscate is
    end Write;
 
    procedure Write (Filename : String) is
-      Context     : Lal.Analysis_Context := Lal.Create_Context;
-      Unit        : Lal.Analysis_Unit := Lal.Get_From_File (Context, Filename);
-      Destination : constant String      := Cli.Destination;
+      Context     : constant Lal.Analysis_Context := Lal.Create_Context;
+      Unit        : constant Lal.Analysis_Unit    :=
+        Lal.Get_From_File (Context, Filename);
+      Destination : constant String               := Cli.Destination;
    begin
       if Destination'Length > 0 then
          Write (Unit, Destination & Filename);

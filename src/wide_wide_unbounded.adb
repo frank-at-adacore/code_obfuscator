@@ -1,5 +1,4 @@
 with Ada.Characters.Conversions;
-with Ada.Strings.Wide_Wide_Unbounded;
 package body Wide_Wide_Unbounded is
 
    package Aswwu renames Ada.Strings.Wide_Wide_Unbounded;
@@ -31,7 +30,7 @@ package body Wide_Wide_Unbounded is
    procedure Append
      (Source   : in out Unbounded_Wide_Wide_String;
       New_Item :        Unbounded_Wide_Wide_String) is
-      Original_Length : Natural := Length (Source) with
+      Original_Length : constant Natural := Length (Source) with
         Ghost;
    begin
       Aswwu.Append (Source.Uwws, New_Item.Uwws);
@@ -41,7 +40,7 @@ package body Wide_Wide_Unbounded is
    procedure Append
      (Source   : in out Unbounded_Wide_Wide_String;
       New_Item :        Wide_Wide_Character) is
-      Original_Length : Natural := Length (Source) with
+      Original_Length : constant Natural := Length (Source) with
         Ghost;
    begin
       Aswwu.Append (Source.Uwws, New_Item);

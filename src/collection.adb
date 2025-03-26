@@ -1,4 +1,3 @@
-with Ada.Containers.Vectors;
 with Ada.Directories;
 with Ada.Exceptions;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
@@ -20,8 +19,6 @@ package body Collection is
    package Lal renames Libadalang.Analysis;
    package Lalpp renames Libadalang.Project_Provider;
    package Vfs renames GNATCOLL.Vfs;
-
-   Max_Size : constant := 10_000;
 
    Project_Tree   : aliased Gcp.Project_Tree;
    Excluded_Paths : Cli.String_Set_T;
@@ -74,7 +71,8 @@ package body Collection is
    procedure Parse_One_File
      (Context : Lal.Analysis_Context;
       File    : Vfs.Virtual_File) is
-      Info_Set  : Gcp.File_Info_Set := Project_Tree.Info_Set (File => File);
+      Info_Set  : constant Gcp.File_Info_Set :=
+        Project_Tree.Info_Set (File => File);
       File_Info : Gcp.File_Info;
       Unit      : Lal.Analysis_Unit;
 
@@ -95,7 +93,8 @@ package body Collection is
    procedure Write_One_File
      (Context : Lal.Analysis_Context;
       File    : Vfs.Virtual_File) is
-      Info_Set  : Gcp.File_Info_Set := Project_Tree.Info_Set (File => File);
+      Info_Set  : constant Gcp.File_Info_Set :=
+        Project_Tree.Info_Set (File => File);
       File_Info : Gcp.File_Info;
       Unit      : Lal.Analysis_Unit;
 
@@ -117,7 +116,7 @@ package body Collection is
    end Write_One_File;
 
    procedure Process_Gpr_File (Filename : String) is
-      Root_Project_Path : Vfs.Virtual_File :=
+      Root_Project_Path : constant Vfs.Virtual_File :=
         Vfs.Create (Full_Filename => Vfs.Filesystem_String (Filename));
       Context           : Lal.Analysis_Context;
       Files             : Vfs.File_Array_Access;
@@ -142,7 +141,7 @@ package body Collection is
            Include_Externally_Built => Cli.Externally_Built);
       for F in Files'Range loop
          declare
-            Fn : Vfs.Filesystem_String := Files (F).Full_Name;
+            Fn : constant Vfs.Filesystem_String := Files (F).Full_Name;
          begin
             Parse_One_File (Context, Files (F));
          exception
