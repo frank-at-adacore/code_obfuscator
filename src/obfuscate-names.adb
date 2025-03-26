@@ -18,8 +18,6 @@ package body Obfuscate.Names is
             if Str (I) = '.' then
                return I;
             end if;
-            pragma Loop_Invariant
-              (for all C of Str (I .. Str'Last) => C /= '.');
          end loop;
       end if;
       return Str'First - 1;
@@ -94,10 +92,8 @@ package body Obfuscate.Names is
       Ret_Val := To_Unbounded_Wide_Wide_String ("");
       while Number >= 26 loop
          New_Number := Number / 26;
-         pragma Loop_Invariant (Number - (New_Number * 26) in Base_26_T);
-         pragma Loop_Invariant (Length (Ret_Val) <= Max_Qualified_Name_Length);
-         Ret_Val := Combine (Number - (New_Number * 26), Ret_Val);
-         Number  := New_Number;
+         Ret_Val    := Combine (Number - (New_Number * 26), Ret_Val);
+         Number     := New_Number;
       end loop;
       Ret_Val := Combine (Number, Ret_Val);
       return Ret_Val;
@@ -120,7 +116,6 @@ package body Obfuscate.Names is
    begin
       for I in 1 .. Pad_Length (Len) - Length (Str) loop
          Ret_Val := Combine (Random.Random_Character, Ret_Val);
-         pragma Loop_Invariant (Length (Ret_Val) <= Max_Qualified_Name_Length);
       end loop;
       return Ret_Val;
    end Random_Pad;

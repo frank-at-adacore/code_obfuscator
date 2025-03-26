@@ -1,14 +1,10 @@
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Containers.Ordered_Sets;
---  with GNATCOLL.Vfs;
 
 package Cli is
 
-   --  package Vfs renames GNATCOLL.Vfs;
-
-   No_Arguments : exception;
-
-   package String_Sets_Pkg is new Ada.Containers.Ordered_Sets (Unbounded_String);
+   package String_Sets_Pkg is new Ada.Containers.Ordered_Sets
+     (Unbounded_String);
    subtype String_Set_T is String_Sets_Pkg.Set;
 
    procedure Initialize;
